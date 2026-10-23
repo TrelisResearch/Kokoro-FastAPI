@@ -17,8 +17,13 @@ jobs:
     
     # Match Dockerfile dependencies
     - name: Install Dependencies
+      timeout-minutes: 10
       run: |
-        sudo apt-get update
+        # The hosted runner's Azure HTTP mirror can be slow for large packages.
+        if [ -f /etc/apt/apt-mirrors.txt ]; then
+          printf '%s\n' 'https://archive.ubuntu.com/ubuntu' | sudo tee /etc/apt/apt-mirrors.txt > /dev/null
+        fi
+        sudo apt-get update -o Acquire::Retries=3 -o Acquire::https::Timeout=30
         sudo apt-get install -y --no-install-recommends \
           espeak-ng \
           espeak-ng-data \
